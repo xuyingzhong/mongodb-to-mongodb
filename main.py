@@ -2,14 +2,14 @@ import pymongo,time,threading
 from bson import ObjectId
 
 #需要读取的mongodb及集合
-connin = pymongo.MongoClient(host='192.168.1.207',port=27018)
+connin = pymongo.MongoClient(host='IP',port=27018)
 dbin = connin.ditasdb
-collectionin = dbin.caseinfo
+collectionin = dbin.test
 
 #需要写入的mongodb及集合
-connout = pymongo.MongoClient(host='192.168.1.31',port=28017)
+connout = pymongo.MongoClient(host='IP',port=27018)
 dbout = connout.ditasdb
-collectionout = dbout.caseinfo
+collectionout = dbout.test
 
 #插入方法,后面多线程调用
 def m_t_m(re_list,last_id,sk,re_len):
@@ -24,10 +24,10 @@ def m_t_m(re_list,last_id,sk,re_len):
             id = i["_id"]
             l = len(list(collectionout.find({"_id": id})))
             if l != 1:
-                with open('caseinfo.txt', "a") as f:
+                with open('test.txt', "a") as f:
                     f.write(str(id) + '\n')
     #执行完就把当次线程的起始条数、读取的长度、最后的id记录下来，如果程序出错了，可以看哪里不连续，用last_id跑一次
-    connout.logs.caseinfo.insert({
+    connout.logs.test.insert({
         "sk":sk,
         "re_len": re_len,
         "last_id":last_id,
