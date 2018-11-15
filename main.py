@@ -26,10 +26,11 @@ def m_t_m(re_list,last_id,sk,re_len):
             if l != 1:
                 with open('test.txt', "a") as f:
                     f.write(str(id) + '\n')
-    #执行完就把当次线程的起始条数、读取的长度、最后的id记录下来，如果程序出错了，可以看哪里不连续，用last_id跑一次
+    #执行完就把当次线程的起始条数、读取的长度、最后的入库条数（断点后的sk值），最后的id（断点后的id值）记录下来。
     connout.logs.test.insert({
         "sk":sk,
         "re_len": re_len,
+        "last_sk":sk + re_len,
         "last_id":last_id,
     })
     #把当次线程的起始条数、读取的长度、最后的id，及当前时间输出到控制台
@@ -37,8 +38,10 @@ def m_t_m(re_list,last_id,sk,re_len):
     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     #线程数减一
     th_n -= 1
-
-
+    
+#如果程序出错了，可以看最后的线程个数（20），
+#从不连续的开始，把下面的sk数量写成last_sk的值，last_id的值填上就可以继续跑了。
+#每次出错核对入库数量。
 sk =0
 li = 5000
 th_n = 0
