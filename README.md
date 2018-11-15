@@ -11,4 +11,4 @@ python3用于mongodb数据库之间倒数据，特别是分片和非分片之间
 
 3、解决了第一条丢失的问题。
 
-4、"_id"的保持ObjectId。
+4、"_id"保持ObjectId。
