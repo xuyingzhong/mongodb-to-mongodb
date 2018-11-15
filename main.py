@@ -105,7 +105,7 @@ while True:
         t.start()
         th_n += 1
         if count - sk < li:
-            sk += count - sk
+            sk += re_len
         else:
             sk += li
         # time.sleep(2)
