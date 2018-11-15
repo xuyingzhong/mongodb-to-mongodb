@@ -22,9 +22,9 @@ conn_out = pymongo.MongoClient(host=conn_out_ip,port=conn_out_port)
 collection_out = eval("conn_out." + db_name + "." + collection_name)
 
 #r日子数据库
-log_collection = conn_out.logs.account
+log_collection = eval("conn_out.logs." + collection_name)
 #错误输出文件
-error_log = "account.txt"
+error_log = "%s.txt"%collection_name
 
 
 
