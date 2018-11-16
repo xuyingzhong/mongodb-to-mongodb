@@ -38,12 +38,11 @@ else:
         log_nu = max_th * 2
     else:
         log_nu = log_count
-    log_re = list(log_collection.find())[-log_nu:]
-    log_sorted = sorted(log_re, key=lambda re_key: re_key['sk'])
+    log_re = list(log_collection.find().sort("sk"))[-log_nu:]
     sk_list = []
-    for i in log_sorted:
+    for i in log_re:
         sk_list.append(i["sk"])
-    for i in log_sorted:
+    for i in log_re:
         if i["last_sk"] not in sk_list:
             sk = i["last_sk"]
             last_id = i["last_id"]
@@ -94,9 +93,9 @@ while True:
             continue
         #首次跑没有last_id
         if not last_id:
-            re = collection_in.find().limit(li)
+            re = collection_in.find().limit(li).sort("_id")
         else:
-            re = collection_in.find({'_id':{'$gt':ObjectId(last_id)}}).limit(li)
+            re = collection_in.find({'_id':{'$gt':ObjectId(last_id)}}).limit(li).sort("_id")
         re_list = list(re)
         last_id = re_list[-1]["_id"]
         re_len = len(re_list)
