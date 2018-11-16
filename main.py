@@ -97,20 +97,14 @@ while True:
             re = collection_in.find().limit(li)
         else:
             re = collection_in.find({'_id':{'$gt':ObjectId(last_id)}}).limit(li)
-         try:
-            re_list = list(re)
-            last_id = re_list[-1]["_id"]
-            re_len = len(re_list)
-            #启动线程
-            t = threading.Thread(target=m_t_m,args=(re_list,last_id,sk,re_len))
-            t.start()
-        except:
-            print("数量可能不对。建议从上次开始跑")
+        re_list = list(re)
+        last_id = re_list[-1]["_id"]
+        re_len = len(re_list)
+        #启动线程
+        t = threading.Thread(target=m_t_m,args=(re_list,last_id,sk,re_len))
+        t.start()
         th_n += 1
-        if count - sk < li:
-            sk += re_len
-        else:
-            sk += li
+        sk += re_len
         # time.sleep(2)
     if sk == count:
         time.sleep(30)
