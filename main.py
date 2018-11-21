@@ -47,10 +47,11 @@ def m_t_m(re_list,sk,re_len,last_id):
     global th_n
     global count
     # print(re_list)
+    #批量插入
     try:
         collection_out.insert(re_list)
     except:
-        # 如果出错，就一条一条的判断，判断是不是有这个ID，如果重复就不管，如果没有重复就把错误的id写到一个文件夹里面
+        # 如果出错，就一条一条的判断，判断是不是有这个ID，如果重复就不管，如果没有重复就插入，如果插入出错就把错误的id写到一个文件里面
         for i in re_list:
             id = i["_id"]
             l = len(list(collection_out.find({"_id": id})))
@@ -58,7 +59,6 @@ def m_t_m(re_list,sk,re_len,last_id):
                 try:
                     collection_out.insert(i)
                 except:
-                    # 如果出错，判断是不是有这个ID，如果重复就不管，如果没有重复就把错误的id写到一个文件夹里面
                     with open(error_log, "a") as f:
                         f.write(str(id) + '\n')
     #执行完就把当次线程的起始条数、读取的长度、最后的id记录下来，如果程序出错了，可以看哪里不连续，用last_id跑一次
@@ -76,6 +76,7 @@ def m_t_m(re_list,sk,re_len,last_id):
     #线程数减一
     th_n -= 1
 
+#############程序开始位置#############
 #定义线程数变量
 th_n = 0
 #程序开始前，统计需要同步的数据条数，已同步的条数，和最后的id,及当前的时间
