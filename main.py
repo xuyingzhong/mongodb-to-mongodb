@@ -26,44 +26,41 @@ log_collection = eval("conn_out.logs." + collection_name)
 #错误输出文件
 error_log = "%s.txt"%collection_name
 
-
-
-#查询最后最大线程数*2的log，线程是异步的，远一点确认，定位从新同步的位置。
+#定位同步的位置。
 log_count = log_collection.count()
 if log_count == 0:
     sk = 0
     last_id = 0
 else:
-    if log_count > max_th * 2:
-        log_nu = max_th * 2
-    else:
-        log_nu = log_count
-    log_re = list(log_collection.find().sort("sk"))[-log_nu:]
-    sk_list = []
+    log_re = list(log_collection.find().sort("sk"))
     for i in log_re:
-        sk_list.append(i["sk"])
-    for i in log_re:
-        if i["last_sk"] not in sk_list:
+        sk = i["last_sk"]
+        l = len(list(log_collection.find({"sk": sk})))
+        if l != 1:
             sk = i["last_sk"]
             last_id = i["last_id"]
             break
 
 
 #插入方法,后面多线程调用
-def m_t_m(re_list,last_id,sk,re_len):
+def m_t_m(re_list,sk,re_len,last_id):
     global th_n
     global count
     # print(re_list)
-    for i in re_list:
-        try:
-            collection_out.insert(i)
-        except:
-            # 如果出错，判断是不是有这个ID，如果重复就不管，如果没有重复就把错误的id写到一个文件夹里面
+    try:
+        collection_out.insert(re_list)
+    except:
+        # 如果出错，就一条一条的判断，判断是不是有这个ID，如果重复就不管，如果没有重复就把错误的id写到一个文件夹里面
+        for i in re_list:
             id = i["_id"]
             l = len(list(collection_out.find({"_id": id})))
             if l != 1:
-                with open(error_log, "a") as f:
-                    f.write(str(id) + '\n')
+                try:
+                    collection_out.insert(i)
+                except:
+                    # 如果出错，判断是不是有这个ID，如果重复就不管，如果没有重复就把错误的id写到一个文件夹里面
+                    with open(error_log, "a") as f:
+                        f.write(str(id) + '\n')
     #执行完就把当次线程的起始条数、读取的长度、最后的id记录下来，如果程序出错了，可以看哪里不连续，用last_id跑一次
     end_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     last_sk = sk + re_len
@@ -86,13 +83,14 @@ count = collection_in.count()
 print("count",count,"sk",sk,"last_id",last_id,time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 #一直循环，如果数据跑完了，就等着，一旦有新数据进来就及时同步
 while True:
+    #数据多，线程就开的多，一直到最大线程数。
     while sk <count:
         #th_n控制需要启动的线程熟练
         if th_n == max_th:
             time.sleep(3)
             continue
         #首次跑没有last_id
-        if not last_id:
+        if last_id == 0:
             re = collection_in.find().limit(li).sort("_id")
         else:
             re = collection_in.find({'_id':{'$gt':ObjectId(last_id)}}).limit(li).sort("_id")
@@ -100,12 +98,12 @@ while True:
         last_id = re_list[-1]["_id"]
         re_len = len(re_list)
         #启动线程
-        t = threading.Thread(target=m_t_m,args=(re_list,last_id,sk,re_len))
+        t = threading.Thread(target=m_t_m,args=(re_list,sk,re_len,last_id))
         t.start()
         th_n += 1
         sk += re_len
         # time.sleep(2)
-    if sk == count:
+    if sk >= count:
         time.sleep(30)
         count = collection_in.count()
         print(count)
